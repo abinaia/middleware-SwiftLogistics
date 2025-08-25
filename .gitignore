@@ -1,0 +1,296 @@
+# SwiftLogistics Middleware Project - .gitignore
+
+# ===================================
+# IDE and Editor Files
+# ===================================
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+*~
+
+# ===================================
+# OS Generated Files
+# ===================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===================================
+# Java/Spring Boot Backend
+# ===================================
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/.mvn/wrapper/maven-wrapper.properties
+backend/mvnw
+backend/mvnw.cmd
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+.m2/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Spring Boot
+*.log
+logs/
+application-*.properties
+application-*.yml
+!application.properties
+!application.yml
+
+# ===================================
+# Node.js/React Frontend
+# ===================================
+client-portal/node_modules/
+client-portal/npm-debug.log*
+client-portal/yarn-debug.log*
+client-portal/yarn-error.log*
+client-portal/lerna-debug.log*
+client-portal/.pnpm-debug.log*
+
+# Runtime data
+client-portal/pids
+client-portal/*.pid
+client-portal/*.seed
+client-portal/*.pid.lock
+
+# Coverage directory used by tools like istanbul
+client-portal/coverage/
+client-portal/*.lcov
+
+# nyc test coverage
+client-portal/.nyc_output
+
+# Grunt intermediate storage
+client-portal/.grunt
+
+# Bower dependency directory
+client-portal/bower_components
+
+# node-waf configuration
+client-portal/.lock-wscript
+
+# Compiled binary addons
+client-portal/build/Release
+
+# Dependency directories
+client-portal/jspm_packages/
+
+# Snowpack dependency directory
+client-portal/web_modules/
+
+# TypeScript cache
+client-portal/*.tsbuildinfo
+
+# Optional npm cache directory
+client-portal/.npm
+
+# Optional eslint cache
+client-portal/.eslintcache
+
+# Optional stylelint cache
+client-portal/.stylelintcache
+
+# Microbundle cache
+client-portal/.rpt2_cache/
+client-portal/.rts2_cache_cjs/
+client-portal/.rts2_cache_es/
+client-portal/.rts2_cache_umd/
+
+# Optional REPL history
+client-portal/.node_repl_history
+
+# Output of 'npm pack'
+client-portal/*.tgz
+
+# Yarn Integrity file
+client-portal/.yarn-integrity
+
+# dotenv environment variable files
+client-portal/.env
+client-portal/.env.development.local
+client-portal/.env.test.local
+client-portal/.env.production.local
+client-portal/.env.local
+
+# parcel-bundler cache
+client-portal/.cache
+client-portal/.parcel-cache
+
+# Next.js build output
+client-portal/.next
+client-portal/out
+
+# Nuxt.js build / generate output
+client-portal/.nuxt
+client-portal/dist
+
+# Gatsby files
+client-portal/.cache/
+client-portal/public
+
+# Storybook build outputs
+client-portal/.out
+client-portal/.storybook-out
+client-portal/storybook-static
+
+# Temporary folders
+client-portal/tmp/
+client-portal/temp/
+
+# React build output
+client-portal/build/
+
+# ===================================
+# React Native Mobile Apps
+# ===================================
+driver-app/node_modules/
+driver-app-mobile/node_modules/
+
+# React Native
+driver-app/.expo/
+driver-app-mobile/.expo/
+driver-app/dist/
+driver-app-mobile/dist/
+driver-app/npm-debug.*
+driver-app-mobile/npm-debug.*
+driver-app/*.jks
+driver-app-mobile/*.jks
+driver-app/*.p8
+driver-app-mobile/*.p8
+driver-app/*.p12
+driver-app-mobile/*.p12
+driver-app/*.key
+driver-app-mobile/*.key
+driver-app/*.mobileprovision
+driver-app-mobile/*.mobileprovision
+driver-app/*.orig.*
+driver-app-mobile/*.orig.*
+driver-app/web-build/
+driver-app-mobile/web-build/
+
+# macOS
+driver-app/.DS_Store
+driver-app-mobile/.DS_Store
+
+# Temporary files created by Metro
+driver-app/.metro-health-check*
+driver-app-mobile/.metro-health-check*
+
+# ===================================
+# Docker
+# ===================================
+.dockerignore
+
+# ===================================
+# Database
+# ===================================
+*.db
+*.sqlite
+*.sqlite3
+
+# PostgreSQL
+*.dump
+*.sql
+
+# ===================================
+# Logs
+# ===================================
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ===================================
+# Environment Variables
+# ===================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+
+# ===================================
+# Package Manager Files
+# ===================================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ===================================
+# Build and Distribution
+# ===================================
+dist/
+build/
+out/
+target/
+
+# ===================================
+# Certificates and Keys
+# ===================================
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# ===================================
+# Backup Files
+# ===================================
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+
+# ===================================
+# Test Coverage
+# ===================================
+coverage/
+*.lcov
+.nyc_output/
+
+# ===================================
+# Miscellaneous
+# ===================================
+.cache/
+.temp/
+.tmp/
+node_modules/
