@@ -1,0 +1,153 @@
+package com.swiftlogistics.middleware.service;
+
+import com.swiftlogistics.middleware.model.Order;
+import com.swiftlogistics.middleware.model.Client;
+import com.swiftlogistics.middleware.model.Package;
+import com.swiftlogistics.middleware.repository.OrderRepository;
+import com.swiftlogistics.middleware.repository.ClientRepository;
+import com.swiftlogistics.middleware.repository.PackageRepository;
+import com.swiftlogistics.middleware.dto.OrderRequest;
+import com.swiftlogistics.middleware.integration.CMSIntegrationService;
+import com.swiftlogistics.middleware.integration.ROSIntegrationService;
+import com.swiftlogistics.middleware.integration.WMSIntegrationService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+// @Transactional  // Disabled temporarily due to DB issues
+public class OrderService {
+
+    // @Autowired
+    // private OrderRepository orderRepository;
+
+    // @Autowired
+    // private ClientRepository clientRepository;
+
+    // @Autowired
+    // private PackageRepository packageRepository;
+
+    @Autowired
+    private CMSIntegrationService cmsIntegrationService;
+
+    @Autowired
+    private ROSIntegrationService rosIntegrationService;
+
+    @Autowired
+    private WMSIntegrationService wmsIntegrationService;
+
+    // @Autowired
+    // private MessageService messageService;  // Temporarily disabled due to circular dependency
+
+    public Order createOrder(OrderRequest orderRequest) {
+        // Database operations temporarily disabled
+        System.out.println("Order creation temporarily disabled - DB not connected");
+        return new Order("temp-order", null, orderRequest.getDeliveryAddress(), orderRequest.getRecipientName());
+        
+        // Get client
+        // Client client = clientRepository.findById(orderRequest.getClientId())
+        //         .orElseThrow(() -> new RuntimeException("Client not found"));
+
+        // Create order
+        // String orderNumber = generateOrderNumber();
+        // Order order = new Order(orderNumber, client, orderRequest.getDeliveryAddress(), orderRequest.getRecipientName());
+        // order.setRecipientPhone(orderRequest.getRecipientPhone());
+        // order.setTrackingNumber(generateTrackingNumber());
+
+        // Save order first
+        // order = orderRepository.save(order);
+
+        // Create package if details provided
+        // if (orderRequest.getPackageDescription() != null) {
+        //     Package pkg = new Package(generatePackageId(), order, orderRequest.getPackageDescription());
+        //     pkg.setWeight(orderRequest.getPackageWeight());
+        //     pkg.setDimensions(orderRequest.getPackageDimensions());
+        //     packageRepository.save(pkg);
+        // }
+
+        // Send to external systems asynchronously
+        // processOrderAsync(order);
+
+        // return order;
+    }
+
+    // All methods below temporarily disabled due to DB and circular dependency issues
+
+    /*
+    private void processOrderAsync(Order order) {
+        // Send order to message queue for async processing
+        messageService.sendOrderForProcessing(order);
+    }
+
+    public void processOrderIntegration(Order order) {
+        try {
+            // Step 1: Submit to CMS
+            cmsIntegrationService.submitOrder(order);
+            updateOrderStatus(order.getId(), Order.OrderStatus.PROCESSING);
+
+            // Step 2: Add to WMS
+            wmsIntegrationService.addPackageToWarehouse(order);
+            updateOrderStatus(order.getId(), Order.OrderStatus.IN_WAREHOUSE);
+
+            // Step 3: Plan route with ROS
+            rosIntegrationService.planRoute(order);
+            updateOrderStatus(order.getId(), Order.OrderStatus.ROUTE_PLANNED);
+
+            // Send real-time notification
+            messageService.sendStatusUpdate(order);
+
+        } catch (Exception e) {
+            // Handle failure and rollback if needed
+            handleOrderProcessingFailure(order, e);
+        }
+    }
+
+    private void handleOrderProcessingFailure(Order order, Exception e) {
+        // Log error and implement compensation logic
+        System.err.println("Failed to process order " + order.getOrderNumber() + ": " + e.getMessage());
+        // Implement saga pattern for rollback
+    }
+
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId).orElse(null);
+    }
+
+    public Order getOrderByTrackingNumber(String trackingNumber) {
+        return orderRepository.findByTrackingNumber(trackingNumber);
+    }
+
+    public List<Order> getOrdersByClientId(Long clientId) {
+        return orderRepository.findByClientId(clientId);
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public Order updateOrderStatus(Long orderId, Order.OrderStatus status) {
+        Order order = orderRepository.findById(orderId).orElse(null);
+        if (order != null) {
+            order.setStatus(status);
+            order = orderRepository.save(order);
+            
+            // Send real-time notification
+            messageService.sendStatusUpdate(order);
+        }
+        return order;
+    }
+
+    private String generateOrderNumber() {
+        return "ORD-" + System.currentTimeMillis();
+    }
+
+    private String generateTrackingNumber() {
+        return "TRK-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private String generatePackageId() {
+        return "PKG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+    */
+}

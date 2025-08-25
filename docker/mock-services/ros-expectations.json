@@ -1,0 +1,59 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/ros/route/plan"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "routeId": "ROUTE-12345",
+        "estimatedTime": "2.5 hours",
+        "distance": "25.7 km",
+        "optimizedStops": [
+          {"order": 1, "address": "123 Main St, Colombo 03", "estimatedTime": "10:30 AM"},
+          {"order": 2, "address": "456 Oak Ave, Colombo 05", "estimatedTime": "11:15 AM"}
+        ],
+        "vehicleAssigned": "VAN-001"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "PUT",
+      "path": "/ros/route/update"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "status": "UPDATED",
+        "message": "Route updated successfully"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/ros/route/status"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "routeId": "ROUTE-12345",
+        "status": "ACTIVE",
+        "currentStop": 1,
+        "totalStops": 2,
+        "estimatedCompletion": "2:30 PM"
+      }
+    }
+  }
+]
