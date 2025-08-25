@@ -2,6 +2,7 @@ package com.swiftlogistics.middleware.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class Order {
     @Column(name = "order_number", nullable = false, unique = true)
     private String orderNumber;
     
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "orders"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
