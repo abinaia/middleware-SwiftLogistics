@@ -1,30 +1,25 @@
 package com.swiftlogistics.middleware.service;
 
-import com.swiftlogistics.middleware.config.RabbitMQConfig;
 import com.swiftlogistics.middleware.model.Order;
 import com.swiftlogistics.middleware.dto.OrderStatusUpdate;
 import com.swiftlogistics.middleware.dto.NotificationMessage;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import com.swiftlogistics.middleware.config.MockRabbitMQConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.retry.annotation.Backoff;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Async;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * MessageService - Handles asynchronous messaging and notifications
+ * Fallback MessageService when RabbitMQ is not available
  */
 @Service
-public class MessageService {
-    
-    @Autowired
-    private RabbitTemplate rabbitTemplate;
+@Profile("demo")
+public class MockMessageService {
     
     @Autowired
     private SimpMessagingTemplate websocketTemplate;
@@ -32,6 +27,9 @@ public class MessageService {
     @Autowired
     @Lazy
     private OrderProcessingService orderProcessingService;
+    
+    @Autowired
+    private MockRabbitMQConfig.MockMessageQueue mockOrderQueue;
     
     /**
      * Send order for asynchronous processing
@@ -44,13 +42,12 @@ public class MessageService {
             orderMessage.put("clientId", order.getClient().getId());
             orderMessage.put("timestamp", LocalDateTime.now());
             
-            rabbitTemplate.convertAndSend(
-                RabbitMQConfig.DIRECT_EXCHANGE,
-                "order.process",
-                orderMessage
-            );
+            mockOrderQueue.send(orderMessage);
             
-            System.out.println("Order sent for processing: " + order.getOrderNumber());
+            // Process asynchronously
+            processOrderAsync(orderMessage);
+            
+            System.out.println("Order sent for processing (mock): " + order.getOrderNumber());
         } catch (Exception e) {
             System.err.println("Failed to send order for processing: " + e.getMessage());
             // Fallback to synchronous processing
@@ -70,13 +67,6 @@ public class MessageService {
             statusUpdate.setUpdatedAt(LocalDateTime.now());
             statusUpdate.setClientId(order.getClient().getId());
             
-            // Send to message queue
-            rabbitTemplate.convertAndSend(
-                RabbitMQConfig.TOPIC_EXCHANGE,
-                "status.update.order",
-                statusUpdate
-            );
-            
             // Send real-time notification via WebSocket
             websocketTemplate.convertAndSend(
                 "/topic/orders/" + order.getId(),
@@ -90,7 +80,7 @@ public class MessageService {
                 statusUpdate
             );
             
-            System.out.println("Status update sent: " + order.getOrderNumber() + " -> " + order.getStatus());
+            System.out.println("Status update sent (mock): " + order.getOrderNumber() + " -> " + order.getStatus());
         } catch (Exception e) {
             System.err.println("Failed to send status update: " + e.getMessage());
         }
@@ -108,97 +98,46 @@ public class MessageService {
             notification.setType(type);
             notification.setTimestamp(LocalDateTime.now());
             
-            rabbitTemplate.convertAndSend(
-                RabbitMQConfig.TOPIC_EXCHANGE,
-                "notification.client",
+            // Send real-time notification via WebSocket
+            websocketTemplate.convertAndSendToUser(
+                clientId.toString(),
+                "/queue/notifications",
                 notification
             );
             
-            System.out.println("Notification sent to client " + clientId + ": " + title);
+            System.out.println("Notification sent (mock) to client " + clientId + ": " + title);
         } catch (Exception e) {
             System.err.println("Failed to send notification: " + e.getMessage());
         }
     }
     
     /**
-     * Process order messages from queue
+     * Process order messages asynchronously
      */
-    @RabbitListener(queues = RabbitMQConfig.ORDER_PROCESSING_QUEUE)
-    @Retryable(value = {Exception.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void processOrderMessage(Map<String, Object> orderMessage) {
+    @Async("orderProcessingExecutor")
+    public void processOrderAsync(Map<String, Object> orderMessage) {
         try {
+            // Simulate some delay for async processing
+            Thread.sleep(2000);
+            
             Long orderId = Long.valueOf(orderMessage.get("orderId").toString());
             String orderNumber = orderMessage.get("orderNumber").toString();
             
-            System.out.println("Processing order from queue: " + orderNumber);
+            System.out.println("Processing order asynchronously (mock): " + orderNumber);
             
             // Process the order through integration services
             orderProcessingService.processOrderIntegration(orderId);
             
-            System.out.println("Order processed successfully: " + orderNumber);
+            System.out.println("Order processed successfully (mock): " + orderNumber);
         } catch (Exception e) {
             System.err.println("Failed to process order message: " + e.getMessage());
-            throw e; // Re-throw to trigger retry or DLQ
         }
-    }
-    
-    /**
-     * Process status update messages
-     */
-    @RabbitListener(queues = RabbitMQConfig.STATUS_UPDATE_QUEUE)
-    public void processStatusUpdate(OrderStatusUpdate statusUpdate) {
-        try {
-            System.out.println("Processing status update: " + statusUpdate.getOrderNumber() + " -> " + statusUpdate.getStatus());
-            
-            // Send real-time notification via WebSocket
-            websocketTemplate.convertAndSend(
-                "/topic/orders/" + statusUpdate.getOrderId(),
-                statusUpdate
-            );
-            
-            // Additional status update processing can be added here
-            
-        } catch (Exception e) {
-            System.err.println("Failed to process status update: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Process notification messages
-     */
-    @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
-    public void processNotification(NotificationMessage notification) {
-        try {
-            System.out.println("Processing notification for client " + notification.getClientId() + ": " + notification.getTitle());
-            
-            // Send real-time notification via WebSocket
-            websocketTemplate.convertAndSendToUser(
-                notification.getClientId().toString(),
-                "/queue/notifications",
-                notification
-            );
-            
-            // Additional notification processing (email, SMS, etc.) can be added here
-            
-        } catch (Exception e) {
-            System.err.println("Failed to process notification: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Handle failed messages from Dead Letter Queue
-     */
-    @RabbitListener(queues = RabbitMQConfig.ORDER_PROCESSING_QUEUE + RabbitMQConfig.DLQ_SUFFIX)
-    public void handleFailedOrderProcessing(Map<String, Object> failedMessage) {
-        System.err.println("Order processing failed after retries: " + failedMessage);
-        // Implement manual intervention workflow
-        // Could send alert to administrators, log to special table, etc.
     }
     
     /**
      * Send high-priority delivery notification to drivers
      */
-    @Async
+    @Async("notificationExecutor")
     public void sendPriorityDeliveryAlert(Order order, String driverChannel) {
         try {
             Map<String, Object> alert = new HashMap<>();
@@ -211,7 +150,7 @@ public class MessageService {
             
             websocketTemplate.convertAndSend("/topic/drivers/" + driverChannel, alert);
             
-            System.out.println("Priority delivery alert sent for order: " + order.getOrderNumber());
+            System.out.println("Priority delivery alert sent (mock) for order: " + order.getOrderNumber());
         } catch (Exception e) {
             System.err.println("Failed to send priority delivery alert: " + e.getMessage());
         }

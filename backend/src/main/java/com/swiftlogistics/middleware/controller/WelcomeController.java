@@ -2,10 +2,18 @@ package com.swiftlogistics.middleware.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = {
+    "http://localhost:3000", 
+    "http://localhost:19006", 
+    "http://172.19.176.1:3000",
+    "http://172.20.10.4:8080",
+    "http://172.19.176.1:8080"
+})
 public class WelcomeController {
 
     @GetMapping("/")

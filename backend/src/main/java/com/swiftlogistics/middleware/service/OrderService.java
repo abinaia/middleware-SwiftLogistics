@@ -17,17 +17,17 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-// @Transactional  // Disabled temporarily due to DB issues
+@Transactional
 public class OrderService {
 
-    // @Autowired
-    // private OrderRepository orderRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
-    // @Autowired
-    // private ClientRepository clientRepository;
+    @Autowired
+    private ClientRepository clientRepository;
 
-    // @Autowired
-    // private PackageRepository packageRepository;
+    @Autowired
+    private PackageRepository packageRepository;
 
     @Autowired
     private CMSIntegrationService cmsIntegrationService;
@@ -38,76 +38,42 @@ public class OrderService {
     @Autowired
     private WMSIntegrationService wmsIntegrationService;
 
-    // @Autowired
-    // private MessageService messageService;  // Temporarily disabled due to circular dependency
+    @Autowired
+    private MessageService messageService;
 
     public Order createOrder(OrderRequest orderRequest) {
-        // Database operations temporarily disabled
-        System.out.println("Order creation temporarily disabled - DB not connected");
-        return new Order("temp-order", null, orderRequest.getDeliveryAddress(), orderRequest.getRecipientName());
-        
         // Get client
-        // Client client = clientRepository.findById(orderRequest.getClientId())
-        //         .orElseThrow(() -> new RuntimeException("Client not found"));
+        Client client = clientRepository.findById(orderRequest.getClientId())
+                .orElseThrow(() -> new RuntimeException("Client not found"));
 
         // Create order
-        // String orderNumber = generateOrderNumber();
-        // Order order = new Order(orderNumber, client, orderRequest.getDeliveryAddress(), orderRequest.getRecipientName());
-        // order.setRecipientPhone(orderRequest.getRecipientPhone());
-        // order.setTrackingNumber(generateTrackingNumber());
+        String orderNumber = generateOrderNumber();
+        Order order = new Order(orderNumber, client, orderRequest.getDeliveryAddress(), orderRequest.getRecipientName());
+        order.setRecipientPhone(orderRequest.getRecipientPhone());
+        order.setTrackingNumber(generateTrackingNumber());
 
         // Save order first
-        // order = orderRepository.save(order);
+        order = orderRepository.save(order);
 
         // Create package if details provided
-        // if (orderRequest.getPackageDescription() != null) {
-        //     Package pkg = new Package(generatePackageId(), order, orderRequest.getPackageDescription());
-        //     pkg.setWeight(orderRequest.getPackageWeight());
-        //     pkg.setDimensions(orderRequest.getPackageDimensions());
-        //     packageRepository.save(pkg);
-        // }
+        if (orderRequest.getPackageDescription() != null) {
+            Package pkg = new Package(generatePackageId(), order, orderRequest.getPackageDescription());
+            pkg.setWeight(orderRequest.getPackageWeight());
+            pkg.setDimensions(orderRequest.getPackageDimensions());
+            packageRepository.save(pkg);
+        }
 
         // Send to external systems asynchronously
-        // processOrderAsync(order);
+        processOrderAsync(order);
 
-        // return order;
+        return order;
     }
 
-    // All methods below temporarily disabled due to DB and circular dependency issues
-
-    /*
+    /**
+     * Send order to message queue for async processing
+     */
     private void processOrderAsync(Order order) {
-        // Send order to message queue for async processing
         messageService.sendOrderForProcessing(order);
-    }
-
-    public void processOrderIntegration(Order order) {
-        try {
-            // Step 1: Submit to CMS
-            cmsIntegrationService.submitOrder(order);
-            updateOrderStatus(order.getId(), Order.OrderStatus.PROCESSING);
-
-            // Step 2: Add to WMS
-            wmsIntegrationService.addPackageToWarehouse(order);
-            updateOrderStatus(order.getId(), Order.OrderStatus.IN_WAREHOUSE);
-
-            // Step 3: Plan route with ROS
-            rosIntegrationService.planRoute(order);
-            updateOrderStatus(order.getId(), Order.OrderStatus.ROUTE_PLANNED);
-
-            // Send real-time notification
-            messageService.sendStatusUpdate(order);
-
-        } catch (Exception e) {
-            // Handle failure and rollback if needed
-            handleOrderProcessingFailure(order, e);
-        }
-    }
-
-    private void handleOrderProcessingFailure(Order order, Exception e) {
-        // Log error and implement compensation logic
-        System.err.println("Failed to process order " + order.getOrderNumber() + ": " + e.getMessage());
-        // Implement saga pattern for rollback
     }
 
     public Order getOrderById(Long orderId) {
@@ -138,6 +104,21 @@ public class OrderService {
         return order;
     }
 
+    /**
+     * Get orders by status
+     */
+    public List<Order> getOrdersByStatus(Order.OrderStatus status) {
+        return orderRepository.findByStatus(status);
+    }
+
+    /**
+     * Update an existing order
+     */
+    public Order updateOrder(Order order) {
+        order.setUpdatedAt(java.time.LocalDateTime.now());
+        return orderRepository.save(order);
+    }
+
     private String generateOrderNumber() {
         return "ORD-" + System.currentTimeMillis();
     }
@@ -149,5 +130,4 @@ public class OrderService {
     private String generatePackageId() {
         return "PKG-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
-    */
 }

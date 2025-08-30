@@ -9,7 +9,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/dashboard")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:19006"})
+@CrossOrigin(origins = {
+    "http://localhost:3000", 
+    "http://localhost:19006", 
+    "http://172.19.176.1:3000",
+    "http://172.20.10.4:8080",
+    "http://172.19.176.1:8080"
+})
 public class DashboardController {
 
     @GetMapping("/stats/{clientId}")
