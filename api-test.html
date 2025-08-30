@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Backend API Test - Signature & Photo Data</h1>
+    
+    <button onclick="testCompletedDeliveries()">Test Completed Deliveries (DRV001)</button>
+    <button onclick="testPendingDeliveries()">Test Pending Deliveries (DRV001)</button>
+    <button onclick="testDashboard()">Test Dashboard</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://172.20.10.4:8080/api';
+        
+        async function makeRequest(url, description) {
+            const resultDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            try {
+                console.log(`🚀 Testing: ${description}`);
+                console.log(`📡 URL: ${url}`);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const resultElement = document.createElement('div');
+                resultElement.className = response.ok ? 'result success' : 'result error';
+                resultElement.innerHTML = `
+                    <h3>${timestamp} - ${description}</h3>
+                    <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                    <p><strong>URL:</strong> ${url}</p>
+                    <h4>Response Data:</h4>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                resultDiv.appendChild(resultElement);
+                
+                // Check for signature and photo data
+                if (data.deliveries && Array.isArray(data.deliveries)) {
+                    const completedWithProof = data.deliveries.filter(d => 
+                        d.status === 'COMPLETED' && (d.signatureUrl || d.photoUrl)
+                    );
+                    
+                    if (completedWithProof.length > 0) {
+                        console.log(`✅ Found ${completedWithProof.length} completed deliveries with proof!`);
+                        completedWithProof.forEach(d => {
+                            console.log(`📋 ${d.deliveryId}: signature=${!!d.signatureUrl}, photo=${!!d.photoUrl}`);
+                        });
+                    } else {
+                        console.log(`❌ No completed deliveries with signature/photo found`);
+                    }
+                }
+                
+            } catch (error) {
+                console.error(`❌ Error testing ${description}:`, error);
+                const resultElement = document.createElement('div');
+                resultElement.className = 'result error';
+                resultElement.innerHTML = `
+                    <h3>${timestamp} - ${description} (ERROR)</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>URL:</strong> ${url}</p>
+                `;
+                document.getElementById('results').appendChild(resultElement);
+            }
+        }
+        
+        function testCompletedDeliveries() {
+            makeRequest(`${API_BASE}/routes/driver/DRV001/deliveries/completed`, 'Completed Deliveries for DRV001');
+        }
+        
+        function testPendingDeliveries() {
+            makeRequest(`${API_BASE}/routes/driver/DRV001/deliveries/pending`, 'Pending Deliveries for DRV001');
+        }
+        
+        function testDashboard() {
+            makeRequest(`${API_BASE}/drivers/DRV001/dashboard`, 'Driver Dashboard');
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        // Auto-test completed deliveries on page load
+        window.onload = function() {
+            setTimeout(testCompletedDeliveries, 1000);
+        };
+    </script>
+</body>
+</html>
