@@ -190,6 +190,13 @@ public class RouteService {
         return deliveryRepository.findByDriverIdAndStatus(driverId, Delivery.DeliveryStatus.IN_TRANSIT);
     }
 
+    /**
+     * Get completed deliveries for a driver
+     */
+    public List<Delivery> getCompletedDeliveries(String driverId) {
+        return deliveryRepository.findByDriverIdAndStatus(driverId, Delivery.DeliveryStatus.COMPLETED);
+    }
+
     // Private helper methods
     private double calculateTotalDistance(List<Map<String, Object>> deliveryData) {
         // Simple distance calculation for demo

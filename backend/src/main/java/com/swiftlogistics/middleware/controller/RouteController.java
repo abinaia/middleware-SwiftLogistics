@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @RestController
-@RequestMapping("/api/routes")
+@RequestMapping("/routes")
 @CrossOrigin(
     origins = {"http://localhost:3000", "http://192.168.1.100:8081", "http://10.0.2.2:8081"},
     allowCredentials = "false"
@@ -160,6 +160,29 @@ public class RouteController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Error fetching pending deliveries: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * Get completed deliveries for a driver
+     * GET /api/routes/driver/{driverId}/deliveries/completed
+     */
+    @GetMapping("/driver/{driverId}/deliveries/completed")
+    public ResponseEntity<Map<String, Object>> getCompletedDeliveries(@PathVariable String driverId) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            List<Delivery> deliveries = routeService.getCompletedDeliveries(driverId);
+            
+            response.put("success", true);
+            response.put("deliveries", deliveries);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error fetching completed deliveries: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }

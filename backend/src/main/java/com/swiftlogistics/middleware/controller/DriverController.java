@@ -4,6 +4,7 @@ import com.swiftlogistics.middleware.model.Driver;
 import com.swiftlogistics.middleware.service.DriverService;
 import com.swiftlogistics.middleware.service.GPSTrackingService;
 import com.swiftlogistics.middleware.service.DeliveryManagementService;
+import com.swiftlogistics.middleware.service.RouteService;
 import com.swiftlogistics.middleware.dto.DriverDashboardResponse;
 import com.swiftlogistics.middleware.dto.DriverStatusRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,9 @@ public class DriverController {
 
     @Autowired
     private DeliveryManagementService deliveryManagementService;
+
+    @Autowired
+    private RouteService routeService;
 
     /**
      * Create a new driver
@@ -326,6 +331,49 @@ public class DriverController {
             response.put("success", false);
             response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * Complete delivery with signature and photo proof
+     */
+    @PostMapping("/deliveries/complete-with-proof")
+    public ResponseEntity<Map<String, Object>> completeDeliveryWithProof(@RequestBody Map<String, Object> request) {
+        try {
+            String driverId = (String) request.get("driverId");
+            String orderNumber = (String) request.get("orderNumber");
+            String deliveryId = (String) request.get("deliveryId");
+            String recipientName = (String) request.get("recipientName");
+            String notes = (String) request.get("notes");
+            String signatureData = (String) request.get("signatureData");
+            String photoData = (String) request.get("photoData");
+            
+            // Complete delivery with signature and photo proof
+            Map<String, Object> completionDetails = new HashMap<>();
+            completionDetails.put("recipientName", recipientName);
+            completionDetails.put("notes", notes);
+            completionDetails.put("signatureData", signatureData);
+            completionDetails.put("photoData", photoData);
+            completionDetails.put("completedAt", LocalDateTime.now());
+            
+            Map<String, Object> result;
+            if (orderNumber != null) {
+                result = deliveryManagementService.completeDelivery(driverId, orderNumber, completionDetails);
+            } else if (deliveryId != null) {
+                result = routeService.completeDelivery(deliveryId, notes, signatureData);
+                result.put("photoData", photoData);
+                result.put("recipientName", recipientName);
+            } else {
+                result = Map.of("status", "ERROR", "message", "Either orderNumber or deliveryId must be provided");
+            }
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("status", "ERROR");
+            error.put("message", "Failed to complete delivery: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
         }
     }
 }
